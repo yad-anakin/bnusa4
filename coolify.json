@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "name": "bnusa-frontend",
+  "type": "application",
+  "buildPack": "docker",
+  "dockerfilePath": "./Dockerfile",
+  "port": 3000,
+  "healthCheckPath": "/",
+  "environmentVariables": [
+    {
+      "name": "NODE_ENV",
+      "value": "production"
+    }
+  ],
+  "volumes": [],
+  "secrets": [
+    "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_B2_BUCKET_NAME",
+    "NEXT_PUBLIC_B2_ENDPOINT",
+    "NEXT_PUBLIC_B2_REGION"
+  ]
+} 

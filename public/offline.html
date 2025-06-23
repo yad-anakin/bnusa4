@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Bnusa Platform</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: #f7f7f7;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      direction: rtl;
+    }
+    .container {
+      max-width: 600px;
+      padding: 2rem;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin: 0 20px;
+    }
+    h1 {
+      color: #1b65e3;
+      margin-bottom: 1rem;
+    }
+    p {
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 2rem;
+    }
+    .btn {
+      background-color: #1b65e3;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn:hover {
+      background-color: #1652b8;
+    }
+    .icon {
+      font-size: 64px;
+      color: #1b65e3;
+      margin-bottom: 1rem;
+    }
+    .cached-content {
+      margin-top: 2rem;
+      border-top: 1px solid #eee;
+      padding-top: 1rem;
+    }
+    .cached-content h2 {
+      font-size: 1.2rem;
+      color: #555;
+    }
+    .article-list {
+      list-style: none;
+      padding: 0;
+      text-align: right;
+    }
+    .article-list li {
+      margin-bottom: 0.5rem;
+    }
+    .article-list a {
+      color: #1b65e3;
+      text-decoration: none;
+    }
+    .article-list a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📶</div>
+    <h1>ئێوە ئاف-لاینن</h1>
+    <p>
+      ئێستا ناتوانن دەستتان بگات بە پلاتفۆرمی بنووسە چونکە هیچ پەیوەندی ئینتەرنێتێکتان نییە.
+      تکایە دڵنیا ببنەوە کە پەیوەندی ئینتەرنێتتان هەیە و دووبارە هەوڵ بدەنەوە.
+    </p>
+    <p>
+      You're currently offline and cannot access the Bnusa Platform.
+      Please check your internet connection and try again.
+    </p>
+    <button class="btn" onclick="window.location.reload()">دووبارە هەوڵبدەوە / Try Again</button>
+    
+    <div class="cached-content">
+      <h2>ناوەڕۆکی پاشەکەوت کراو / Cached Content</h2>
+      <p>ئەم ناوەڕۆکانە لێرە بەردەستن کاتێک ئاف-لاینن:</p>
+      <ul class="article-list" id="cached-articles">
+        <!-- This will be populated by JavaScript if there are cached articles -->
+        <li><em>هیچ ناوەڕۆکێکی پاشەکەوت کراو نییە / No cached content available</em></li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Check if we have any cached articles to display
+    if ('caches' in window) {
+      caches.open('bnusa-cache-v1').then(cache => {
+        cache.keys().then(keys => {
+          const articleList = document.getElementById('cached-articles');
+          const articleLinks = keys.filter(key => {
+            const url = new URL(key.url);
+            return url.pathname.includes('/article/');
+          });
+          
+          if (articleLinks.length > 0) {
+            articleList.innerHTML = '';
+            articleLinks.forEach(key => {
+              const url = new URL(key.url);
+              const articleSlug = url.pathname.split('/').pop();
+              const listItem = document.createElement('li');
+              const link = document.createElement('a');
+              link.href = key.url;
+              link.textContent = articleSlug.replace(/-/g, ' ');
+              listItem.appendChild(link);
+              articleList.appendChild(listItem);
+            });
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html> 
