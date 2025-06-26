@@ -43,6 +43,10 @@ interface UserProfile {
     website?: string;
   };
   isWriter?: boolean;
+  isSupervisor?: boolean;
+  isDesigner?: boolean;
+  supervisorText?: string;
+  designsCount?: number;
   articles?: Article[];
   userImage?: {
     userId: string;
@@ -1017,10 +1021,10 @@ export default function UserDetailPage() {
           href={`https://twitter.com/${user.socialMedia.twitter}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-500 p-3 rounded-lg transition-colors"
+          className="bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-500 p-2 sm:p-3 rounded-lg transition-colors"
           aria-label="Twitter"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
           </svg>
         </a>
@@ -1034,10 +1038,10 @@ export default function UserDetailPage() {
           href={`https://facebook.com/${user.socialMedia.facebook}`}
           target="_blank"
           rel="noopener noreferrer" 
-          className="bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-600 p-3 rounded-lg transition-colors"
+          className="bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-600 p-2 sm:p-3 rounded-lg transition-colors"
           aria-label="Facebook"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
           </svg>
         </a>
@@ -1051,10 +1055,10 @@ export default function UserDetailPage() {
           href={`https://instagram.com/${user.socialMedia.instagram}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-gray-50 hover:bg-pink-50 text-gray-500 hover:text-pink-600 p-3 rounded-lg transition-colors"
+          className="bg-gray-50 hover:bg-pink-50 text-gray-500 hover:text-pink-600 p-2 sm:p-3 rounded-lg transition-colors"
           aria-label="Instagram"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
           </svg>
         </a>
@@ -1068,10 +1072,10 @@ export default function UserDetailPage() {
           href={`https://linkedin.com/in/${user.socialMedia.linkedin}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-700 p-3 rounded-lg transition-colors"
+          className="bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-blue-700 p-2 sm:p-3 rounded-lg transition-colors"
           aria-label="LinkedIn"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
           </svg>
         </a>
@@ -1085,10 +1089,10 @@ export default function UserDetailPage() {
           href={`https://github.com/${user.socialMedia.github}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-800 p-3 rounded-lg transition-colors"
+          className="bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-800 p-2 sm:p-3 rounded-lg transition-colors"
           aria-label="GitHub"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.237 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
           </svg>
         </a>
@@ -1102,21 +1106,17 @@ export default function UserDetailPage() {
           href={user.socialMedia.website}
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-gray-50 hover:bg-green-50 text-gray-500 hover:text-green-600 p-3 rounded-lg transition-colors"
+          className="bg-gray-50 hover:bg-green-50 text-gray-500 hover:text-green-600 p-2 sm:p-3 rounded-lg transition-colors"
           aria-label="Website"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
           </svg>
         </a>
       );
     }
     
-    return socialIcons.length > 0 ? (
-      <div className="flex gap-3">
-        {socialIcons}
-      </div>
-    ) : null;
+    return socialIcons.length > 0 ? socialIcons : null;
   };
 
   // Replace the UserAvatar component with this optimized version
@@ -1264,7 +1264,7 @@ export default function UserDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Banner */}
-      <div className="relative h-64 md:h-80 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">
+      <div className="relative h-48 sm:h-64 md:h-80 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">
         {getBannerImageUrl(user) && getBannerImageUrl(user) !== '/images/placeholders/profile-banner-primary.jpg' ? (
             <ImageWithFallback
             src={getBannerImageUrl(user)}
@@ -1293,10 +1293,10 @@ export default function UserDetailPage() {
 
       {/* Profile Info with optimized avatar */}
       <div className="container mx-auto px-4 relative">
-        <div className="bg-white rounded-lg shadow-sm -mt-20 p-6 md:p-8">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
+        <div className="bg-white rounded-lg shadow-sm -mt-16 sm:-mt-20 p-4 sm:p-6 md:p-8">
+          <div className="flex flex-col md:flex-row gap-4 sm:gap-6 items-start">
             {/* Profile Image */}
-            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white shadow-md overflow-hidden flex-shrink-0">
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full border-4 border-white shadow-md overflow-hidden flex-shrink-0 mx-auto md:mx-0">
               <img
                 src={getProfileImageUrl(user)}
                 alt={user.name}
@@ -1314,23 +1314,39 @@ export default function UserDetailPage() {
               <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold mb-1">{user.name}</h1>
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
                     <p className="text-[var(--grey-dark)]">@{user.username}</p>
                     {user.isWriter && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                      <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <svg className="w-3 h-3 mr-0.5 sm:mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                           <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
                         </svg>
-                        نووسەر
+                        <span className="whitespace-nowrap">نووسەر</span>
+                      </span>
+                    )}
+                    {user.isSupervisor && (
+                      <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <svg className="w-3 h-3 mr-0.5 sm:mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
+                        </svg>
+                        <span className="whitespace-nowrap">سەرپەرشتیار</span>
+                      </span>
+                    )}
+                    {user.isDesigner && (
+                      <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        <svg className="w-3 h-3 mr-0.5 sm:mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                          <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clipRule="evenodd" />
+                        </svg>
+                        <span className="whitespace-nowrap">دیزاینەر</span>
                       </span>
                     )}
                   </div>
                   
                   {/* Follow button - only show if not viewing own profile */}
                   {!isOwnProfile && (
-                    <div className="flex flex-col md:flex-row gap-4 mb-4">
+                    <div className="flex flex-col md:flex-row gap-2 sm:gap-4 mb-4">
                     <button
-                        className={`flex items-center justify-center gap-2 px-6 py-2 rounded-lg transition-all duration-300 min-w-[130px] ${
+                        className={`flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-1.5 sm:py-2 rounded-lg transition-all duration-300 min-w-[100px] sm:min-w-[130px] text-sm sm:text-base ${
                           isFollowing
                             ? 'bg-gray-100 hover:bg-gray-200 text-gray-800'
                             : 'bg-[var(--primary)] hover:bg-[var(--primary-dark)] text-white'
@@ -1339,20 +1355,20 @@ export default function UserDetailPage() {
                       disabled={followLoading}
                     >
                       {followLoading ? (
-                          <div className="h-5 w-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                          <div className="h-4 w-4 sm:h-5 sm:w-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                         ) : isFollowing ? (
                             <>
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                               </svg>
-                            دووری بکەوەوە
+                            <span className="whitespace-nowrap">دووری بکەوەوە</span>
                             </>
                           ) : (
                             <>
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"></path>
                               </svg>
-                            دوای بکەوە
+                            <span className="whitespace-nowrap">دوای بکەوە</span>
                         </>
                       )}
                     </button>
@@ -1360,45 +1376,84 @@ export default function UserDetailPage() {
                   )}
                 </div>
                 
-                <div className="flex gap-4 mt-2 md:mt-0">
+                <div className="flex flex-wrap gap-3 sm:gap-6 mt-3 md:mt-0">
                   <button
-                    className="bg-gray-50 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-100 transition-colors"
+                    className="group relative bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-200 hover:border-blue-300 px-4 sm:px-5 lg:px-6 py-2.5 sm:py-3 lg:py-3.5 rounded-xl flex items-center gap-2.5 sm:gap-3 lg:gap-4 transition-all duration-300 text-sm sm:text-base font-medium"
                     aria-label="Show followers"
                     onClick={handleShowFollowersModal}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--primary)]" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                    </svg>
-                    <span className="font-bold">{user.followers.length}</span> 
-                    <span className="text-[var(--grey-dark)]">شوێنکەوتوو</span>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-blue-500 rounded-full opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 lg:h-6 lg:w-6 text-blue-600 relative z-10" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                      </svg>
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="font-bold text-lg sm:text-xl lg:text-xl text-gray-800 group-hover:text-blue-700 transition-colors duration-300">{user.followers.length}</span> 
+                      <span className="text-blue-600 text-xs sm:text-sm font-medium">شوێنکەوتوو</span>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
                   </button>
                   
                   <button
-                    className="bg-gray-50 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-100 transition-colors"
+                    className="group relative bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border border-purple-200 hover:border-purple-300 px-4 sm:px-5 lg:px-6 py-2.5 sm:py-3 lg:py-3.5 rounded-xl flex items-center gap-2.5 sm:gap-3 lg:gap-4 transition-all duration-300 text-sm sm:text-base font-medium"
                     aria-label="Show following"
                     onClick={handleShowFollowingModal}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--primary)]" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                    </svg>
-                    <span className="font-bold">{user?.following?.length || 0}</span> 
-                    <span className="text-[var(--grey-dark)]">شوێنکەوتن</span>
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-purple-500 rounded-full opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6 lg:h-6 lg:w-6 text-purple-600 relative z-10" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                      </svg>
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="font-bold text-lg sm:text-xl lg:text-xl text-gray-800 group-hover:text-purple-700 transition-colors duration-300">{user?.following?.length || 0}</span> 
+                      <span className="text-purple-600 text-xs sm:text-sm font-medium">شوێنکەوتن</span>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
                   </button>
                 </div>
               </div>
 
-              {user.bio && <p className="text-[var(--grey-dark)] mb-4">{user.bio}</p>}
+              {user.bio && <p className="text-[var(--grey-dark)] mb-4 text-sm sm:text-base break-words">{user.bio}</p>}
+              
+              {/* Role-specific information */}
+              <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                {user.isSupervisor && user.supervisorText && (
+                  <div className="bg-green-50 border border-green-100 rounded-lg p-3 text-green-800 text-sm flex-grow">
+                    <div className="flex items-center flex-wrap">
+                      <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
+                      </svg>
+                      <span className="break-words">{user.supervisorText}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {user.isDesigner && user.designsCount !== undefined && (
+                  <div className="bg-purple-50 border border-purple-100 rounded-lg p-3 text-purple-800 text-sm flex-grow">
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clipRule="evenodd" />
+                      </svg>
+                      <span>{user.designsCount} دیزاین</span>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Social Media */}
-              <div className="mt-5">
-                <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--primary)]" viewBox="0 0 20 20" fill="currentColor">
+              <div className="mt-4 sm:mt-5">
+                <h3 className="text-sm font-medium mb-2 sm:mb-3 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 text-[var(--primary)]" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
                     <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
                   </svg>
                   پەیوەندی:
                 </h3>
-                {renderSocialMedia()}
+                <div className="flex flex-wrap gap-2">
+                  {renderSocialMedia()}
+                </div>
               </div>
             </div>
           </div>
@@ -1406,17 +1461,17 @@ export default function UserDetailPage() {
       </div>
 
       {/* More sections can be added here according to requirements - like recent activities, comments, etc. */}
-      <div className="container mx-auto py-12 px-4">
-        <h2 className="text-2xl font-bold mb-6">وتارەکانی {user.name}</h2>
+      <div className="container mx-auto py-6 sm:py-8 md:py-12 px-4">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">وتارەکانی {user.name}</h2>
         
         {!user.articles || user.articles.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          <p className="text-[var(--grey-dark)]">
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 md:p-8 text-center">
+          <p className="text-[var(--grey-dark)] text-sm sm:text-base">
               هیچ وتارێک نییە بۆ پیشاندان.
           </p>
         </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {user.articles
               .slice()
               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -1432,7 +1487,9 @@ export default function UserDetailPage() {
                   name: user.name,
                   username: user.username,
                   profileImage: user.profileImage,
-                  isWriter: user.isWriter
+                  isWriter: user.isWriter,
+                  isSupervisor: user.isSupervisor,
+                  isDesigner: user.isDesigner
                 }}
               />
             ))}

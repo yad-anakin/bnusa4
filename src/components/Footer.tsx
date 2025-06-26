@@ -43,7 +43,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link href="/writers" className="text-[var(--grey)] hover:text-[var(--primary)]">
-                  نووسەران
+                  ستاف
                 </Link>
               </li>
               <li>

@@ -117,7 +117,7 @@ const Navbar = () => {
                 href="/writers" 
                 className="text-[var(--foreground)] hover:text-[var(--primary)] transition-colors px-2 py-1 font-medium"
               >
-                نووسەران
+                ستاف
               </Link>
               <Link 
                 href="/write-here" 
@@ -238,7 +238,7 @@ const Navbar = () => {
               className="text-2xl font-medium text-[var(--foreground)] hover:text-[var(--primary)] transition-colors"
               onClick={toggleMenu}
             >
-              نووسەران
+              ستاف
             </Link>
             <Link
               href="/write-here"

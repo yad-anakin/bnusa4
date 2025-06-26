@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import WriterCardOptimized from '@/components/WriterCardOptimized';
 import api from '@/utils/api';
-import { MagnifyingGlassIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, PencilSquareIcon, AdjustmentsHorizontalIcon, PaintBrushIcon } from '@heroicons/react/24/outline';
 
 // Define floating animations for decorative elements
 const floatingStyles = `
@@ -53,25 +53,31 @@ const floatingStyles = `
 }
 `;
 
-// Define the User type with articles/isWriter flag
+// Define the User type with roles flags
 interface User {
   _id: string;
   name: string;
   username: string;
   profileImage: string;
   bio: string;
-  isWriter: boolean;
+  isWriter: boolean | string;
+  isSupervisor: boolean | string;
+  isDesigner: boolean | string;
   articles: any[];
   followers: any[];
+  designsCount?: number; // For designers
+  writingCount?: number; // For supervisors (deprecated)
+  supervisorText?: string; // For supervisors
 }
 
-export default function WritersPage() {
-  const [writers, setWriters] = useState<User[]>([]);
-  const [filteredWriters, setFilteredWriters] = useState<User[]>([]);
+export default function StaffPage() {
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const [activeTab, setActiveTab] = useState<'writers' | 'supervisors' | 'designers'>('writers');
+  const [currentPage, setCurrentPage] = useState(1);
+  const usersPerPage = 8; // Show 8 users per page
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Add the animation styles to the document
@@ -89,34 +95,69 @@ export default function WritersPage() {
     };
   }, []);
 
+  // Fetch all users on component mount
   useEffect(() => {
-    const fetchWriters = async () => {
+    const fetchAllUsers = async () => {
       try {
         setLoading(true);
+        console.log('Fetching all users...');
         
-        // Use the API utility with a 5-minute cache duration for this specific endpoint
-        // This ensures we don't make redundant calls when navigating back to this page
-        const data = await api.get('/api/users?isWriter=true&limit=16', {}, {
-          useCache: true,
-          cacheDuration: 5 * 60 * 1000 // 5 minutes
+        // Use the API utility to fetch all users with no cache
+        // We'll fetch all users without role filtering to populate all tabs
+        const data = await api.get('/api/users?limit=100', {}, {
+          useCache: false,
+          cacheDuration: 0
         });
         
+        console.log('API response:', data);
+        
         if (data.success) {
-          // Sort writers by number of articles (high to low)
-          const sortedWriters = [...data.users].sort((a, b) => 
-            (b.articles?.length || 0) - (a.articles?.length || 0)
-          );
-          setWriters(sortedWriters);
-          setFilteredWriters(sortedWriters);
+          let users = data.users || [];
+          console.log(`Fetched ${users.length} users`);
+          
+          // Ensure all users have the required role properties
+          users = users.map((user: any) => ({
+            ...user,
+            isWriter: user.isWriter || false,
+            isSupervisor: user.isSupervisor || false,
+            isDesigner: user.isDesigner || false
+          }));
+          
+          // Log detailed information about all users
+          console.log('All users with roles:');
+          users.forEach((user: User) => {
+            console.log(`User ${user.name} (${user.username}): ` +
+              `isWriter=${user.isWriter} (${typeof user.isWriter}), ` +
+              `isSupervisor=${user.isSupervisor} (${typeof user.isSupervisor}), ` + 
+              `isDesigner=${user.isDesigner} (${typeof user.isDesigner})`);
+          });
+          
+          // Test the isTruthy function on each user role
+          console.log('Testing isTruthy function:');
+          users.forEach((user: User) => {
+            console.log(`User ${user.name}: ` +
+              `isWriter=${isTruthy(user.isWriter)}, ` +
+              `isSupervisor=${isTruthy(user.isSupervisor)}, ` + 
+              `isDesigner=${isTruthy(user.isDesigner)}`);
+          });
+          
+          // Count users by role using the isTruthy function
+          const writersCount = users.filter((u: User) => isTruthy(u.isWriter)).length;
+          const supervisorsCount = users.filter((u: User) => isTruthy(u.isSupervisor)).length;
+          const designersCount = users.filter((u: User) => isTruthy(u.isDesigner)).length;
+          
+          console.log(`Role counts using isTruthy: Writers=${writersCount}, Supervisors=${supervisorsCount}, Designers=${designersCount}`);
+          
+          setAllUsers(users);
         } else {
-          throw new Error(data.message || 'Failed to fetch writers');
+          throw new Error(data.message || 'Failed to fetch users');
         }
       } catch (error) {
-        console.error('Error fetching writers:', error);
-        setError('Failed to load writers. Please try again later.');
+        console.error('Error fetching users:', error);
+        setError('Failed to load users. Please try again later.');
         
-        // Show fallback writers if API call fails
-        const fallbackWriters = [
+        // Set fallback data with users for all tabs
+        setAllUsers([
           {
             _id: '1',
             name: 'ئازاد کەریم',
@@ -124,6 +165,8 @@ export default function WritersPage() {
             profileImage: '/author-default.jpg',
             bio: 'نووسەر و ڕۆژنامەنووس',
             isWriter: true,
+            isSupervisor: false,
+            isDesigner: false,
             articles: new Array(5),
             followers: new Array(23)
           },
@@ -134,46 +177,103 @@ export default function WritersPage() {
             profileImage: '/author-default.jpg',
             bio: 'نووسەر و وەرگێڕ',
             isWriter: true,
+            isSupervisor: false,
+            isDesigner: false,
             articles: new Array(3),
             followers: new Array(12)
+          },
+          {
+            _id: '3',
+            name: 'هێمن محەمەد',
+            username: 'hemen',
+            profileImage: '/author-default.jpg',
+            bio: 'سەرپەرشتیار لە پلاتفۆرمی بنووسە',
+            isWriter: false,
+            isSupervisor: true,
+            isDesigner: false,
+            articles: new Array(0),
+            followers: new Array(8),
+            supervisorText: 'بەشی وتار و چیرۆک'
+          },
+          {
+            _id: '4',
+            name: 'شادان عەلی',
+            username: 'shadan',
+            profileImage: '/author-default.jpg',
+            bio: 'دیزاینەر لە پلاتفۆرمی بنووسە',
+            isWriter: false,
+            isSupervisor: false,
+            isDesigner: true,
+            articles: new Array(0),
+            followers: new Array(15),
+            designsCount: 12
           }
-        ];
-        setWriters(fallbackWriters);
-        setFilteredWriters(fallbackWriters);
+        ]);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchWriters();
-    
-    // Cleanup function
-    return () => {
-      // No cleanup needed, the cache will persist but we don't need to clear it
-    };
+    fetchAllUsers();
   }, []);
 
-  // Filter writers based on search term
-  useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredWriters(writers);
-      setIsSearching(false);
-    } else {
-      setIsSearching(true);
-      const filtered = writers.filter(writer => 
-        writer.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredWriters(filtered);
-      setIsSearching(false);
+  // Filter users based on active tab and search term
+  const filteredUsers = allUsers.filter(user => {
+    // First filter by role
+    if (activeTab === 'writers' && !isTruthy(user.isWriter)) return false;
+    if (activeTab === 'supervisors' && !isTruthy(user.isSupervisor)) return false;
+    if (activeTab === 'designers' && !isTruthy(user.isDesigner)) return false;
+    
+    // Then filter by search term if present
+    if (searchTerm && !user.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
     }
-  }, [searchTerm, writers]);
+    
+    return true;
+  });
+  
+  // Calculate pagination values
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = filteredUsers
+    .sort((a, b) => {
+      if (activeTab === 'writers') {
+        return (b.articles?.length || 0) - (a.articles?.length || 0);
+      } else if (activeTab === 'designers') {
+        return (b.designsCount || 0) - (a.designsCount || 0);
+      }
+      return 0;
+    })
+    .slice(indexOfFirstUser, indexOfLastUser);
+    
+  // Handle page changes
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+    // Scroll to top when changing pages
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Helper function to check if a value is truthy
+  function isTruthy(value: any): boolean {
+    if (value === undefined || value === null) return false;
+    
+    if (typeof value === 'string') {
+      const lowercaseValue = value.toLowerCase();
+      return lowercaseValue === 'true' || lowercaseValue === '1' || lowercaseValue === 'yes';
+    }
+    
+    if (typeof value === 'number') {
+      return value === 1;
+    }
+    
+    return Boolean(value);
+  }
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    if (e.target.value.trim() !== '') {
-      setIsSearching(true);
-    }
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   // Clear search function
@@ -185,74 +285,127 @@ export default function WritersPage() {
     }
   };
 
-  // Handle search form submission
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // No need for separate API call since we're filtering locally
-    setIsSearching(false);
+  // Get the correct title and count for the active tab
+  const getActiveTabInfo = () => {
+    switch (activeTab) {
+      case 'writers':
+        return {
+          title: 'نووسەرەکان',
+          count: filteredUsers.length,
+          icon: <PencilSquareIcon className="h-6 w-6 text-blue-600" />
+        };
+      case 'supervisors':
+        return {
+          title: 'سەرپەرشتیارەکان',
+          count: filteredUsers.length,
+          icon: <AdjustmentsHorizontalIcon className="h-6 w-6 text-green-600" />
+        };
+      case 'designers':
+        return {
+          title: 'دیزاینەرەکان',
+          count: filteredUsers.length,
+          icon: <PaintBrushIcon className="h-6 w-6 text-purple-600" />
+        };
+      default:
+        return {
+          title: 'ستافی پلاتفۆرم',
+          count: filteredUsers.length,
+          icon: <PencilSquareIcon className="h-6 w-6 text-blue-600" />
+        };
+    }
   };
 
-  return (
-    <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
-      <div className="container mx-auto py-16 px-4 sm:px-6 lg:px-8">
-        {/* Elegant header with minimalist design */}
-        <div className="max-w-4xl mx-auto mb-16 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 text-gray-800 relative inline-block">
-            <span className="relative z-10">نووسەرانی پلاتفۆرم</span>
-            <span className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-[var(--primary)] to-[var(--primary-light)] rounded-full"></span>
-          </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto mb-12 md:text-lg">
-            بەکارهێنەران کە وتاریان بڵاوکردۆتەوە لە پلاتفۆرمەکەمان. دوای بکەون و بەرهەمە داهێنەرانەکانیان بخوێننەوە.
-          </p>
+  const { title, count, icon } = getActiveTabInfo();
 
-          {/* Enhanced search bar with animations */}
-          <div className="max-w-2xl mx-auto mb-10 relative">
-            {/* Left decoration */}
-            <div className="absolute -top-4 -left-4 text-[var(--primary)] opacity-60 animate-gentle-fade animate-tiny-sway">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.75.75 0 01.728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 010 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 01-1.456 0l-.258-1.036a2.625 2.625 0 00-1.91-1.91l-1.036-.258a.75.75 0 010-1.456l1.036-.258a2.625 2.625 0 001.91-1.91l.258-1.036A.75.75 0 0118 1.5zM16.5 15a.75.75 0 01.712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 010 1.422l-1.183.395c-.447.15-.799.5-.948.948l-.395 1.183a.75.75 0 01-1.422 0l-.395-1.183a1.5 1.5 0 00-.948-.948l-1.183-.395a.75.75 0 010-1.422l1.183-.395c.447-.15.799-.5.948-.948l.395-1.183A.75.75 0 0116.5 15z" clipRule="evenodd" />
-              </svg>
-            </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[var(--primary)]/10 via-white to-[var(--primary)]/5 relative">
+      {/* Background light effects */}
+      <div className="absolute top-20 left-20 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-40 right-20 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-5xl max-h-5xl bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-full blur-3xl"></div>
+      
+      <div className="container mx-auto px-4 py-24 relative z-10">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold mb-4 px-4 mx-auto">
+            <span className="bg-gradient-to-r from-blue-700 via-blue-500 to-blue-100 bg-clip-text text-transparent inline-block py-1">
+              ستافی پلاتفۆرم
+            </span>
+          </h1>
+          <p className="text-[var(--grey-dark)] text-lg max-w-2xl mx-auto">
+             پڕۆفایلی ستافی بنووسە لە نووسەران، سەرپەرشتیار و دیزاینەران. 
+          </p>
+        </div>
             
-            {/* Search icon decoration */}
-            <div className="absolute -top-2 right-8 text-[var(--primary-light)] opacity-50 animate-gentle-fade animate-reduced-motion">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                <path d="M8.25 10.875a2.625 2.625 0 115.25 0 2.625 2.625 0 01-5.25 0z" />
-                <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.125 4.5a4.125 4.125 0 102.338 7.524l2.007 2.006a.75.75 0 101.06-1.06l-2.006-2.007a4.125 4.125 0 00-3.399-6.463z" clipRule="evenodd" />
-              </svg>
-            </div>
-            
-            {/* Small document icon */}
-            <div className="absolute -bottom-4 -right-6 text-[var(--primary-light)] opacity-40 animate-gentle-pulse animate-reduced-motion">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                <path d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0016.5 9h-1.875a1.875 1.875 0 01-1.875-1.875V5.25A3.75 3.75 0 009 1.5H5.625z" />
-                <path d="M12.971 1.816A5.23 5.23 0 0114.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 013.434 1.279 9.768 9.768 0 00-6.963-6.963z" />
-              </svg>
-            </div>
-            
-            <form 
-              onSubmit={handleSearch} 
-              className="relative"
-              role="search"
-              aria-label="Search writers"
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex rounded-md shadow-sm bg-white/20 backdrop-blur-md p-1">
+            <button
+              onClick={() => {
+                setActiveTab('writers');
+                setCurrentPage(1); // Reset to first page when changing tabs
+              }}
+              className={`px-6 py-3 text-sm font-medium rounded-md flex items-center ${
+                activeTab === 'writers'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
             >
+              <PencilSquareIcon className={`h-5 w-5 ${activeTab === 'writers' ? 'text-blue-600' : 'text-gray-400'} mr-2`} />
+             نووسەرەکان            </button>
+            <button
+              onClick={() => {
+                setActiveTab('supervisors');
+                setCurrentPage(1); // Reset to first page when changing tabs
+              }}
+              className={`px-6 py-3 text-sm font-medium rounded-md flex items-center ${
+                activeTab === 'supervisors'
+                  ? 'bg-green-100 text-green-700'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <AdjustmentsHorizontalIcon className={`h-5 w-5 ${activeTab === 'supervisors' ? 'text-green-600' : 'text-gray-400'} mr-2`} />
+              سەرپەرشتیارەکان
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('designers');
+                setCurrentPage(1); // Reset to first page when changing tabs
+              }}
+              className={`px-6 py-3 text-sm font-medium rounded-md flex items-center ${
+                activeTab === 'designers'
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <PaintBrushIcon className={`h-5 w-5 ${activeTab === 'designers' ? 'text-purple-600' : 'text-gray-400'} mr-2`} />
+              دیزاینەرەکان
+            </button>
+          </div>
+            </div>
+            
+        {/* Section Header */}
+        <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center bg-white/30 backdrop-blur-md px-6 py-3 rounded-full shadow-sm">
+            {icon}
+            <h2 className="text-2xl font-bold mx-3">{title}</h2>
+            <div className="bg-[var(--primary)]/10 px-3 py-1 rounded-full text-[var(--primary)] font-semibold">
+              {count}
+            </div>
+          </div>
+            </div>
+            
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-12">
               <div className="relative group">
                 <input
                   type="text"
                   ref={searchInputRef}
                   value={searchTerm}
                   onChange={handleSearchChange}
-                  placeholder="گەڕان بەدوای نووسەران..."
-                  className={`w-full px-5 py-3.5 rounded-full 
-                    ${searchTerm 
-                      ? 'border-[var(--primary)] border-2 bg-white/50 backdrop-blur-md' 
-                      : 'border-[#e5e7eb] border group-hover:border-[var(--primary-light)] bg-white/40 backdrop-blur-md'
-                    } 
-                    focus:border-[var(--primary)] focus:border-2
-                    focus:outline-none transition-all duration-200 ease-in-out
-                    text-gray-800 placeholder-gray-500 pr-12`}
+              placeholder={`گەڕان بەدوای ${title}...`}
+              className="w-full px-6 py-4 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md focus:outline-none focus:border-[var(--primary)]/50 text-lg"
                   style={{ direction: 'rtl' }}
-                  aria-label="Search writers"
+              aria-label="Search staff"
                   onKeyDown={(e) => {
                     // Clear on Escape key
                     if (e.key === 'Escape') {
@@ -261,109 +414,148 @@ export default function WritersPage() {
                     }
                   }}
                 />
-                {/* Search icon on the right side */}
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[var(--primary)] pointer-events-none">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                {searchTerm && (
                   <button
-                    type="button"
-                    onClick={clearSearch}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[var(--primary)] transition-colors"
-                    aria-label="Clear search"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary)]"
+              onClick={() => setSearchTerm(searchInputRef.current?.value || '')}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </button>
-                )}
-              </div>
-              
-              {isSearching && (
-                <div className="absolute left-1/2 -translate-x-1/2 mt-2 flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-[var(--primary)] border-t-transparent rounded-full animate-spin mr-2"></div>
-                  <span className="text-sm text-gray-600">گەڕان...</span>
-                </div>
-              )}
-            </form>
           </div>
-          
-          {/* Active search filter display - only show when searching */}
-          {searchTerm && filteredWriters.length > 0 && !isSearching && (
-            <div className="max-w-md mx-auto -mt-6 mb-8">
-              <div className="flex items-center justify-center">
-                <div className="bg-[#eff6ff]/40 backdrop-blur-md border border-[var(--primary-light)]/50 text-[var(--primary-dark)] px-4 py-1.5 rounded-full text-sm font-medium flex items-center">
-                  <span className="mr-1">گەڕان بۆ:</span> {searchTerm}
-                  <button 
-                    onClick={clearSearch}
-                    className="ml-2 p-0.5 text-[var(--primary)] hover:text-[var(--primary-dark)] hover:bg-[#dbeafe]/40 rounded-full transition-all"
-                    aria-label="Clear search"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Content section */}
-        {loading ? (
-          <div className="flex flex-col justify-center items-center h-64">
-            <div className="w-16 h-16 border-4 border-[var(--primary)] border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-[var(--grey-dark)]">بارکردنی نووسەران...</p>
+        {/* Error Message */}
+        {error && (
+          <div className="max-w-2xl mx-auto mb-8 p-4 bg-red-100 text-red-700 rounded-lg">
+            <p className="text-center">{error}</p>
           </div>
-        ) : error ? (
-          <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded-lg text-center text-red-800">{error}</div>
-        ) : filteredWriters.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 15l-5-5 5-5" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 12H5" />
-            </svg>
-            <p className="text-xl text-[var(--grey-dark)] mb-4">هیچ نووسەرێک نەدۆزرایەوە بەم ناوە</p>
-            <button 
-              onClick={clearSearch}
-              className="mt-2 px-6 py-3 bg-[var(--primary)] text-white rounded-lg hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg"
-            >
-              پیشاندانی هەموو نووسەران
-            </button>
+        )}
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--primary)]"></div>
+          </div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-[var(--grey)] text-lg">هیچ ستافێک نەدۆزرایەوە</p>
           </div>
         ) : (
           <>
-            <div className="flex justify-between items-center mb-8">
-              <p className="text-gray-600">
-                <span className="font-semibold text-[var(--primary)]">{filteredWriters.length}</span> نووسەر
+            {/* Pagination summary */}
+            <div className="text-center mb-6 text-gray-600">
+              <p>
+                نیشاندانی {indexOfFirstUser + 1} - {Math.min(indexOfLastUser, filteredUsers.length)} لە کۆی {filteredUsers.length} {activeTab === 'writers' ? 'ستاف' : activeTab === 'supervisors' ? 'سەرپەرشتیار' : 'دیزاینەر'}
               </p>
-              {searchTerm && (
-                <p className="text-gray-600 bg-gray-100 px-4 py-1 rounded-full">
-                  گەڕان: <span className="font-semibold text-[var(--primary)]">{searchTerm}</span>
-                </p>
-              )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredWriters.map((writer) => (
-                <WriterCardOptimized key={writer._id} writer={{
-                  id: writer._id,
-                  name: writer.name,
-                  bio: writer.bio || "بەکارهێنەر لە پلاتفۆرمی بنووسە",
-                  avatar: writer.profileImage || '',
-                  articlesCount: writer.articles?.length || 0,
-                  followers: writer.followers?.length || 0,
-                  username: writer.username
-                }} />
-              ))}
+            {/* Staff Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {currentUsers.map((staff, index) => {
+                // Determine rank (only for top 3) - but not for supervisors
+                // Note: We use index + indexOfFirstUser to ensure correct ranking across pages
+                const globalIndex = index + indexOfFirstUser;
+                const rank = (activeTab !== 'supervisors' && globalIndex < 3) ? 
+                  (globalIndex + 1) as 1 | 2 | 3 : undefined;
+                
+                return (
+                  <WriterCardOptimized 
+                    key={staff._id} 
+                    writer={{
+                      id: staff._id,
+                      name: staff.name,
+                      bio: staff.bio || "بەکارهێنەر لە پلاتفۆرمی بنووسە",
+                      avatar: staff.profileImage || '',
+                      articlesCount: staff.articles?.length || 0,
+                      followers: staff.followers?.length || 0,
+                      username: staff.username,
+                      role: activeTab === 'supervisors' ? 'supervisor' : 
+                            activeTab === 'designers' ? 'designer' : 'writer',
+                      designsCount: staff.designsCount || 0, // Always pass designsCount regardless of role
+                      supervisorText: activeTab === 'supervisors' ? (staff.supervisorText || '') : undefined
+                    }}
+                    rank={rank}
+                  />
+                );
+              })}
             </div>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-12">
+                <div className="inline-flex rounded-md shadow-sm bg-white/30 backdrop-blur-md p-1">
+                  {/* Previous Page Button */}
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 text-sm font-medium rounded-md flex items-center mr-1
+                      ${currentPage === 1 
+                        ? 'text-gray-400 cursor-not-allowed' 
+                        : 'text-gray-700 hover:bg-white/50'}`}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    پێشوو
+                  </button>
+                  
+                  {/* Page Numbers */}
+                  <div className="flex">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      // Show pages around current page
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        // If 5 or fewer pages, show all
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        // If near start, show first 5
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        // If near end, show last 5
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        // Otherwise show current and 2 on each side
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-4 py-2 text-sm font-medium rounded-md mx-0.5
+                            ${currentPage === pageNum
+                              ? 'bg-[var(--primary)] text-white'
+                              : 'text-gray-700 hover:bg-white/50'}`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Next Page Button */}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 text-sm font-medium rounded-md flex items-center ml-1
+                      ${currentPage === totalPages
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-gray-700 hover:bg-white/50'}`}
+                  >
+                    دواتر
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
 
         {/* Join as Writer CTA */}
-        <div className="mt-20 bg-white rounded-2xl p-8 text-center shadow-lg border border-gray-100 relative overflow-hidden">
+        <div className="mt-20 bg-white/10 backdrop-blur-md rounded-2xl p-8 text-center shadow-lg border border-white/20 relative overflow-hidden">
           <div className="relative z-10">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--primary-light)]/20 text-[var(--primary)] mb-6">
               <PencilSquareIcon className="h-8 w-8" />

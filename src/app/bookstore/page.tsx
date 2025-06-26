@@ -187,8 +187,10 @@ export default function Bookstore() {
     <div className="min-h-screen bg-gradient-to-br from-[var(--primary)]/10 via-white to-[var(--primary)]/5">
       <div className="container mx-auto px-4 py-24">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-[var(--primary)] to-[var(--primary-dark)] bg-clip-text text-transparent">
-            کتێبخانەی بنووسە
+          <h1 className="text-5xl font-bold mb-4 px-4 mx-auto">
+            <span className="bg-gradient-to-r from-blue-700 via-blue-500 to-blue-100 bg-clip-text text-transparent inline-block py-1">
+              کتێبخانەی بنووسە
+            </span>
           </h1>
           <p className="text-[var(--grey-dark)] text-lg max-w-2xl mx-auto">
             کۆمەڵێک کتێبی PDF کە لە ڕێگەی تۆڕە کۆمەڵایەتییەکانمان کۆکراونەتەوە
