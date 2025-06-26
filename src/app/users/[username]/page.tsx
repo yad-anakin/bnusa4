@@ -3,12 +3,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import ImageWithFallback from '@/components/ImageWithFallback';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import ArticleCard from '@/components/ArticleCard';
 import { useToast } from '@/context/ToastContext';
 import api from '@/utils/api';
-import Image from 'next/image';
 import UserListModal from '@/components/users/UserListModal';
 
 // Define types
@@ -1266,7 +1265,7 @@ export default function UserDetailPage() {
       {/* Banner */}
       <div className="relative h-48 sm:h-64 md:h-80 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]">
         {getBannerImageUrl(user) && getBannerImageUrl(user) !== '/images/placeholders/profile-banner-primary.jpg' ? (
-            <ImageWithFallback
+            <Image
             src={getBannerImageUrl(user)}
             alt="Profile banner"
               fill
@@ -1279,7 +1278,7 @@ export default function UserDetailPage() {
           />
         ) : (
           // Default banner
-          <ImageWithFallback
+          <Image
             src="/images/deafult-banner.jpg"
             alt="Default profile banner"
             fill

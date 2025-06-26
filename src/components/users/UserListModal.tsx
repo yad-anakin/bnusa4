@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import ImageWithFallback from '@/components/ImageWithFallback';
 
 interface UserItem {
   _id: string;
@@ -187,16 +186,8 @@ const UserListModal: React.FC<UserListModalProps> = ({
                       onClose();
                     }}
                   >
-                    <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                      <ImageWithFallback
-                        src={getProfileImageUrl(user)}
-                        alt={user.name}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                        initials={user.name.substring(0, 2)}
-                        placeholderSize="avatar"
-                        key={`${user._id}-${followingMap[user._id]}`}
-                      />
+                    <div className="relative w-10 h-10 rounded-full overflow-hidden bg-[var(--primary)] flex items-center justify-center text-white">
+                      <span className="font-medium">{user.name.substring(0, 2)}</span>
                     </div>
                     <div>
                       <p className="font-medium">{user.name}</p>
