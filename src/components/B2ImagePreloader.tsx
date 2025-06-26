@@ -10,15 +10,10 @@ const COMMON_IMAGES = [
   // Banner images
   '/images/img/bnusa-name.png',
   '/images/default-banner.jpg',
-  '/images/default-fallback.png',
   
   // Logo and branding
   '/images/logo.png',
   '/images/logo-white.png',
-  
-  // Common placeholder images
-  '/images/placeholders/article-primary.png',
-  '/images/placeholders/avatar-default-primary.png',
 ];
 
 // Page-specific critical images
@@ -29,8 +24,7 @@ const PAGE_SPECIFIC_IMAGES: Record<string, string[]> = {
     '/images/patterns/pattern-dots.svg',
   ],
   '/publishes': [
-    // Publishes page specific images
-    '/images/placeholders/article-primary.png',
+    // Publishes page specific images (now empty as placeholder was removed)
   ],
 };
 

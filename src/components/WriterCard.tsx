@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import ImageWithFallback from './ImageWithFallback';
 
 interface WriterCardProps {
   writer: {
@@ -18,16 +17,10 @@ const WriterCard = ({ writer }: WriterCardProps) => {
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-[var(--grey-light)] p-6">
       <div className="flex flex-col items-center">
-        <div className="w-24 h-24 rounded-full overflow-hidden mb-4 bg-[var(--grey-light)] relative">
-          <ImageWithFallback
-            src={writer.avatar || `/images/placeholders/avatar-${writer.name.substring(0, 2).toLowerCase()}-primary.png`}
-            alt={`${writer.name} avatar`}
-            fill
-            style={{ objectFit: 'cover' }}
-            placeholderSize="avatar"
-            placeholderType="primary"
-            initials={writer.name.substring(0, 2)}
-          />
+        <div className="w-24 h-24 rounded-full overflow-hidden mb-4 bg-[var(--primary)] relative flex items-center justify-center">
+          <span className="text-white text-2xl font-bold">
+            {writer.name.substring(0, 2)}
+          </span>
         </div>
         <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">{writer.name}</h3>
         <p className="text-[var(--grey-dark)] text-center mb-4 line-clamp-3">{writer.bio}</p>

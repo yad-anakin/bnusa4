@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTheme } from '@/utils/themeContext';
-import ImageWithFallback from './ImageWithFallback';
 import { useEffect, useState } from 'react';
 
 const HeroSection = () => {
@@ -46,16 +46,8 @@ const HeroSection = () => {
             <div className="flex items-center space-x-4 pt-4">
               <div className="flex -space-x-2">
                 {[   'بـ','نـ', 'وو','سـ','ـە',].map((initials, i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white overflow-hidden">
-                    <ImageWithFallback
-                      src={`/images/placeholders/avatar-${initials.toLowerCase()}-primary.png`}
-                      alt={`User ${initials}`}
-                      width={40}
-                      height={40}
-                      placeholderSize="avatar"
-                      placeholderType="primary"
-                      initials={initials}
-                    />
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-[var(--primary)] flex items-center justify-center text-white font-medium overflow-hidden">
+                    {initials}
                   </div>
                 ))}
               </div>
@@ -71,15 +63,12 @@ const HeroSection = () => {
             style={{ transitionDelay: '250ms' }}
           >
             {/* Featured Article Image */}
-            <ImageWithFallback
+            <Image
               src="/images/img/bnusa-name.png"
               alt="وتاری تایبەت لەسەر ئەدەبی کوردی"
               fill
               style={{ objectFit: 'cover' }}
               sizes="(max-width: 768px) 100vw, 50vw"
-              placeholderSize="hero"
-              placeholderType="primary"
-              withPattern={true}
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>

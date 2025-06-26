@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import ImageWithFallback from './ImageWithFallback';
+import Image from 'next/image';
 
 interface ArticleCardProps {
   title: string;
@@ -27,15 +27,12 @@ const ArticleCard = ({ title, description, author, slug, categories = [], status
   return (
     <div className="bg-white rounded-lg overflow-hidden border border-[var(--grey-light)] flex flex-col h-full">
       <div className="relative h-48 bg-[var(--grey-light)]">
-        <ImageWithFallback
+        <Image
           src={coverImage || `/images/placeholders/article-primary.png`}
           alt={title}
           className="object-cover"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          placeholderSize="article"
-          placeholderType="primary"
-          withPattern={!coverImage}
           priority={false}
         />
         {categories && categories.length > 0 && (
@@ -91,16 +88,9 @@ const ArticleCard = ({ title, description, author, slug, categories = [], status
             </div>
             
             <div className="w-8 h-8 rounded-full overflow-hidden bg-[var(--primary)] relative">
-              <ImageWithFallback
-                src={safeAuthor.profileImage || `/images/placeholders/avatar-${safeAuthor.name.substring(0, 2).toLowerCase()}-primary.png`}
-                alt={`${safeAuthor.name} avatar`}
-                fill
-                style={{ objectFit: 'cover' }}
-                placeholderSize="avatar"
-                placeholderType="primary"
-                initials={safeAuthor.name.substring(0, 2)}
-                priority={false}
-              />
+              <div className="w-full h-full flex items-center justify-center bg-[var(--primary)] text-white text-sm font-medium">
+                {safeAuthor.name.substring(0, 2)}
+              </div>
             </div>
           </div>
         </div>
