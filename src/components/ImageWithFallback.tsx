@@ -161,52 +161,74 @@ const ImageWithFallback = ({
 
   // Modified to avoid timestamp params for most images
   const getCacheControlledUrl = (url: string) => {
-    if (!url || typeof url !== 'string' || !url.startsWith('http')) return url;
+    // Basic validation to prevent errors with invalid URLs
+    if (!url || typeof url !== 'string') return '';
     
-    // For Navbar user images and profile images that need frequent updates
-    if (isProfileImage(url)) {
-      // Check if it's a navbar image (keep previous optimization)
-      if (url.includes('currentUser.photoURL')) {
-        // Use a static timestamp to avoid constant refreshing
-        const staticTimestamp = Math.floor(Date.now() / (60 * 60 * 1000)); // Changes hourly
-        const separator = url.includes('?') ? '&' : '?';
-        return `${url}${separator}t=${staticTimestamp}`;
-      } 
-      // For other profile images, we still refresh but less aggressively
-      else {
-        // Use a daily timestamp to reduce requests but still update occasionally
-        const separator = url.includes('?') ? '&' : '?';
-        const dailyTimestamp = Math.floor(Date.now() / (24 * 60 * 60 * 1000));
-        return `${url}${separator}t=${dailyTimestamp}`;
+    // Handle relative URLs - don't modify them
+    if (!url.startsWith('http')) return url;
+    
+    try {
+      // Try to parse the URL to ensure it's valid
+      new URL(url);
+      
+      // For Navbar user images and profile images that need frequent updates
+      if (isProfileImage(url)) {
+        // Check if it's a navbar image (keep previous optimization)
+        if (url.includes('currentUser.photoURL')) {
+          // Use a static timestamp to avoid constant refreshing
+          const staticTimestamp = Math.floor(Date.now() / (60 * 60 * 1000)); // Changes hourly
+          const separator = url.includes('?') ? '&' : '?';
+          return `${url}${separator}t=${staticTimestamp}`;
+        } 
+        // For other profile images, we still refresh but less aggressively
+        else {
+          // Use a daily timestamp to reduce requests but still update occasionally
+          const separator = url.includes('?') ? '&' : '?';
+          const dailyTimestamp = Math.floor(Date.now() / (24 * 60 * 60 * 1000));
+          return `${url}${separator}t=${dailyTimestamp}`;
+        }
       }
-    }
-    
-    // For B2 images, optimize size but don't add timestamps
-    if (isB2ImageUrl(url)) {
-      // If the image is used in a card or small context, request a smaller version
-      if (placeholderSize === 'article' || props.width && (typeof props.width === 'number' && props.width < 400)) {
-        const separator = url.includes('?') ? '&' : '?';
-        // Add size parameters to request a smaller image from B2
-        return `${url}${separator}w=400&q=80`;
+      
+      // For B2 images, optimize size but don't add timestamps
+      if (isB2ImageUrl(url)) {
+        // If the image is used in a card or small context, request a smaller version
+        if (placeholderSize === 'article' || props.width && (typeof props.width === 'number' && props.width < 400)) {
+          const separator = url.includes('?') ? '&' : '?';
+          // Add size parameters to request a smaller image from B2
+          return `${url}${separator}w=400&q=80`;
+        }
+        // Return the URL as-is for B2 images
+        return url;
       }
-      // Return the URL as-is for B2 images
-      return url;
+      
+      // For other images, use a weekly timestamp
+      // This is a good balance between freshness and caching
+      const separator = url.includes('?') ? '&' : '?';
+      const weeklyTimestamp = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+      return `${url}${separator}t=${weeklyTimestamp}`;
+    } catch (e) {
+      // If URL parsing fails, return an empty string to trigger the fallback
+      console.warn('Invalid image URL:', url);
+      return '';
     }
-    
-    // For other images, use a weekly timestamp
-    // This is a good balance between freshness and caching
-    const separator = url.includes('?') ? '&' : '?';
-    const weeklyTimestamp = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
-    return `${url}${separator}t=${weeklyTimestamp}`;
   };
 
   const handleError = async () => {
     if (!error) {
       setError(true);
       
+      // Call the error callback if provided
+      if (onLoadFailure) {
+        onLoadFailure(new Error(`Failed to load image: ${src}`));
+      }
+      
       // If the failed image is a B2 image, try to refresh its cache
       if (isB2ImageUrl(src)) {
-        api.refreshImageCache(src);
+        try {
+          api.refreshImageCache(src);
+        } catch (e) {
+          console.warn('Error refreshing image cache:', e);
+        }
       }
       
       if (fallbackSrc) {
@@ -216,18 +238,16 @@ const ImageWithFallback = ({
         // For banners only, try to get fallback from B2
         try {
           const b2Url = await getDefaultBannerUrl();
-          console.log("Using B2 banner fallback URL:", b2Url);
           setImgSrc(b2Url);
         } catch (e) {
-          console.error("Error fetching B2 fallback image:", e);
           // If B2 fetch fails, use local fallback
-          const localPath = `/images/deafult-banner.jpg`;
-          console.log("B2 fallback failed, using local banner path:", localPath);
+          const localPath = `/images/placeholders/hero-${placeholderType || 'primary'}.png`;
           setImgSrc(localPath);
         }
       } else {
-        // For other image types, especially avatars, we'll display a colored div with initials
-        // We won't set an image source, just trigger rendering the fallback div
+        // Use appropriate placeholder based on the type
+        const placeholderPath = `/images/placeholders/${placeholderSize || 'article'}-${placeholderType || 'primary'}.png`;
+        setImgSrc(placeholderPath);
         setLoaded(false); // Keep loaded false to show the fallback div
       }
     }
@@ -264,24 +284,26 @@ const ImageWithFallback = ({
   // Simplified approach for SSR compatibility
   return (
     <div ref={imageRef} className="relative w-full h-full">
-      {/* Image element */}
+      {/* Image element - Only render if we have a valid source */}
+      {imgSrc && (
         <Image
-        {...(props.fill ? { fill: true } : {})}
-        {...(props.width && !props.fill ? { width: props.width, height: props.height } : {})}
-        src={getCacheControlledUrl(imageSrc)}
+          {...(props.fill ? { fill: true } : {})}
+          {...(props.width && !props.fill ? { width: props.width, height: props.height } : {})}
+          src={getCacheControlledUrl(imageSrc) || `/images/placeholders/${placeholderSize || 'article'}-${placeholderType || 'primary'}.png`}
           alt={alt}
           onError={handleError}
-        onLoad={handleImageLoad}
-        loading={props.priority ? undefined : (props.loading || "lazy")}
-        className={`${className || ''} transition-opacity duration-300`}
-        style={{
-          ...props.style,
-          opacity: 1, // Always start visible - we'll handle fading with CSS transitions
-        }}
-        sizes={props.sizes}
-        quality={props.quality}
-        priority={props.priority}
-      />
+          onLoad={handleImageLoad}
+          loading={props.priority ? undefined : (props.loading || "lazy")}
+          className={`${className || ''} transition-opacity duration-300`}
+          style={{
+            ...props.style,
+            opacity: 1, // Always start visible - we'll handle fading with CSS transitions
+          }}
+          sizes={props.sizes}
+          quality={props.quality || 80}
+          priority={props.priority}
+        />
+      )}
       
       {/* Fallback content using CSS for transitions */}
         <div 
