@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "name": "bnusa-admin",
+  "type": "application",
+  "buildPack": "docker",
+  "dockerfilePath": "./Dockerfile",
+  "port": 3003,
+  "healthCheckPath": "/",
+  "environmentVariables": [
+    {
+      "name": "NODE_ENV",
+      "value": "production"
+    }
+  ],
+  "volumes": [],
+  "secrets": [
+    "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_JWT_SECRET",
+    "MONGODB_URI",
+    "MONGODB_DB"
+  ]
+} 

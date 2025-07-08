@@ -1,0 +1,40 @@
+# Dependencies
+/node_modules
+/package-lock.json
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Test files
+test-*.js
+*-test.js
+/tests
+
+# Debug files
+debug-*.js
+*-debug.js
+
+# Misc
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Uploads
+/uploads/*
+!/uploads/.gitkeep 
